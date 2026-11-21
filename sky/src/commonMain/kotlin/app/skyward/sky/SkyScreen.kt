@@ -58,6 +58,7 @@ import app.skyward.sky.tabs.sunRows
 import dev.jamesyox.kastro.sol.SolarEvent
 
 private val MaxContentWidth = 600.dp
+private val TabBarTopPadding = 16.dp
 
 /** Connects [SkyScreen] to [viewModel], the location permission and the app coming forward. */
 @Composable
@@ -101,7 +102,8 @@ private fun AskForLocationOnce(
 }
 
 /**
- * Today's dial pinned at the top, with the selection's detail card and the tabs scrolling below.
+ * Today's dial pinned at the top, then the selection's detail card and the tab bar, with only the
+ * tab's content scrolling.
  */
 @Suppress("ParameterNaming")
 @Composable
@@ -146,11 +148,7 @@ fun SkyScreen(
                     state = state,
                     onSelect = onSelect,
                     onSelectTab = onTabSelected,
-                    modifier =
-                        Modifier.widthIn(max = MaxContentWidth)
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .verticalScroll(rememberScrollState()),
+                    modifier = Modifier.widthIn(max = MaxContentWidth).fillMaxWidth().weight(1f),
                 )
             }
         }
@@ -179,6 +177,7 @@ private fun BelowDial(
             )
         }
         PrimaryTabRow(
+            modifier = Modifier.padding(top = TabBarTopPadding),
             selectedTabIndex = state.tab.ordinal,
             containerColor = MaterialTheme.colorScheme.background,
         ) {
@@ -192,19 +191,20 @@ private fun BelowDial(
                 )
             }
         }
-        TabContent(
-            state = state,
-            onSelect = onSelect,
+        Column(
             modifier =
                 Modifier.fillMaxWidth()
+                    .weight(1f)
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(12.dp),
-        )
-        Spacer(
-            Modifier.fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface)
-                .windowInsetsBottomHeight(WindowInsets.safeDrawing),
-        )
+                    .verticalScroll(rememberScrollState()),
+        ) {
+            TabContent(
+                state = state,
+                onSelect = onSelect,
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+            )
+            Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.safeDrawing))
+        }
     }
 }
 
