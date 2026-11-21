@@ -1,6 +1,7 @@
 package app.skyward.data.location
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
@@ -32,10 +33,12 @@ class AndroidLocationSource(private val context: Context) : LocationSource {
     private suspend fun fixFromProvider(): FixResult {
         val manager = context.getSystemService(LocationManager::class.java)
         val provider = manager.coarseProvider()
-        val location =
+        val fresh =
             provider?.let { withTimeoutOrNull(FIX_TIMEOUT) { manager.awaitCurrentLocation(it) } }
+        if (fresh == null) log.i { "No fresh location from provider $provider; trying cached ones" }
+        val location = freshOrNewest(fresh, manager.cachedLocations(), Location::getTime)
         return if (location == null) {
-            log.w { "No coarse location from provider $provider within $FIX_TIMEOUT" }
+            log.w { "No location, fresh or cached, from any provider" }
             FixResult.Unavailable
         } else {
             FixResult.Success(
@@ -51,6 +54,10 @@ class AndroidLocationSource(private val context: Context) : LocationSource {
         listOf(LocationManager.FUSED_PROVIDER, LocationManager.NETWORK_PROVIDER).firstOrNull {
             isProviderEnabled(it)
         }
+
+    @SuppressLint("MissingPermission") // Only reached after the coarse permission check.
+    private fun LocationManager.cachedLocations(): List<Location?> =
+        CACHED_PROVIDERS.filter { it in allProviders }.map(::getLastKnownLocation)
 
     private suspend fun LocationManager.awaitCurrentLocation(provider: String): Location? =
         suspendCancellableCoroutine { continuation ->
@@ -69,5 +76,11 @@ class AndroidLocationSource(private val context: Context) : LocationSource {
     private companion object {
         val log = Logger.withTag("AndroidLocationSource")
         val FIX_TIMEOUT = 30.seconds
+        val CACHED_PROVIDERS =
+            listOf(
+                LocationManager.FUSED_PROVIDER,
+                LocationManager.NETWORK_PROVIDER,
+                LocationManager.PASSIVE_PROVIDER,
+            )
     }
 }

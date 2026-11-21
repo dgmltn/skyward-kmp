@@ -8,7 +8,11 @@ import app.skyward.domain.SkyNow
 sealed interface SkyUiState {
     data object Loading : SkyUiState
 
-    data class NeedsLocation(val denied: Boolean) : SkyUiState
+    data class NeedsLocation(
+        val denied: Boolean,
+        val locating: Boolean = false,
+        val couldNotLocate: Boolean = false,
+    ) : SkyUiState
 
     /** There's a location but the sky couldn't be worked out for it. */
     data object Unavailable : SkyUiState

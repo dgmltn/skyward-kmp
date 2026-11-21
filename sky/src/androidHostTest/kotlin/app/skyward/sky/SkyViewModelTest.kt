@@ -23,6 +23,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -158,6 +159,41 @@ class SkyViewModelTest {
         viewModel.onPermissionResult(granted = true)
 
         location.refreshes.first { it == 1 }
+    }
+
+    @Test
+    fun failedFixWithoutSavedLocationSaysSo() = runTest {
+        val viewModel = viewModel(FakeLocation(null))
+        viewModel.state.first { it is SkyUiState.NeedsLocation }
+
+        viewModel.onPermissionResult(granted = true)
+
+        assertEquals(
+            SkyUiState.NeedsLocation(denied = false, couldNotLocate = true),
+            viewModel.state.first { (it as? SkyUiState.NeedsLocation)?.couldNotLocate == true },
+        )
+    }
+
+    @Test
+    fun locatingIsShownWhileTheFixIsPending() = runTest {
+        val answer = CompletableDeferred<FixResult>()
+        val location =
+            object : LocationRepository {
+                override val saved: Flow<SavedLocation?> = MutableStateFlow(null)
+
+                override suspend fun refresh(): FixResult = answer.await()
+            }
+        val viewModel = viewModel(location)
+        viewModel.state.first { it is SkyUiState.NeedsLocation }
+
+        viewModel.onPermissionResult(granted = true)
+
+        viewModel.state.first { (it as? SkyUiState.NeedsLocation)?.locating == true }
+        answer.complete(FixResult.Unavailable)
+        assertEquals(
+            SkyUiState.NeedsLocation(denied = false, couldNotLocate = true),
+            viewModel.state.first { (it as? SkyUiState.NeedsLocation)?.locating == false },
+        )
     }
 
     @Test

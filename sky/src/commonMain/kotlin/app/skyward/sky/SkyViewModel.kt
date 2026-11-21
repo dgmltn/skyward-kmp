@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.skyward.dial.buildDialModel
 import app.skyward.dial.hitTest
+import app.skyward.domain.FixResult
 import app.skyward.domain.GeoPoint
 import app.skyward.domain.LocationRepository
 import app.skyward.domain.SkyDay
@@ -40,6 +41,7 @@ class SkyViewModel(
     private val selected = MutableStateFlow<SkyItem?>(null)
     private val tab = MutableStateFlow(SkyTab.STATES)
     private val permissionDenied = MutableStateFlow(false)
+    private val fix = MutableStateFlow(FixProgress())
     private val foregroundCount = MutableStateFlow(0)
 
     private var cachedDay: CachedDay? = null
@@ -52,9 +54,15 @@ class SkyViewModel(
         }
 
     val state: StateFlow<SkyUiState> =
-        combine(skyData, selected, tab, permissionDenied) { source, selected, tab, denied ->
+        combine(skyData, selected, tab, permissionDenied, fix) { source, selected, tab, denied, fix
+                ->
                 when (source) {
-                    SkySource.NoLocation -> SkyUiState.NeedsLocation(denied)
+                    SkySource.NoLocation ->
+                        SkyUiState.NeedsLocation(
+                            denied = denied,
+                            locating = fix.locating,
+                            couldNotLocate = fix.failed,
+                        )
                     SkySource.Failed -> SkyUiState.Unavailable
                     is SkySource.Computed -> readyOrFallback(source.data, selected, tab)
                 }
@@ -87,13 +95,18 @@ class SkyViewModel(
     @Suppress("TooGenericExceptionCaught")
     private fun refreshLocation() {
         viewModelScope.launch {
-            try {
-                location.refresh()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                log.e(e) { "Couldn't refresh the location" }
-            }
+            fix.update { it.copy(locating = true) }
+            val located =
+                try {
+                    location.refresh() is FixResult.Success
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    log.e(e) { "Couldn't refresh the location" }
+                    false
+                }
+            if (!located) log.w { "No location from this refresh" }
+            fix.value = FixProgress(locating = false, failed = !located)
         }
     }
 
@@ -145,6 +158,8 @@ class SkyViewModel(
     private class CachedDay(val key: DayKey, val day: SkyDay)
 
     private class SkyData(val day: SkyDay, val now: SkyNow)
+
+    private data class FixProgress(val locating: Boolean = false, val failed: Boolean = false)
 
     private sealed interface SkySource {
         data object NoLocation : SkySource

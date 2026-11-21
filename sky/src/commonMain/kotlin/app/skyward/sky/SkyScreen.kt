@@ -131,6 +131,8 @@ fun SkyScreen(
             is SkyUiState.NeedsLocation ->
                 LocationPrompt(
                     denied = state.denied,
+                    locating = state.locating,
+                    couldNotLocate = state.couldNotLocate,
                     onRequestPermission = onRequestPermission,
                     modifier = dialModifier,
                 )
