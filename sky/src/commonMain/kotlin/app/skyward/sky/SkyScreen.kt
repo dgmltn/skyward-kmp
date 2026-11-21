@@ -5,6 +5,13 @@
 
 package app.skyward.sky
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -59,6 +66,7 @@ import dev.jamesyox.kastro.sol.SolarEvent
 
 private val MaxContentWidth = 600.dp
 private val BelowDialTopPadding = 16.dp
+private const val DETAIL_CARD_FADE_MS = 220
 
 /** Connects [SkyScreen] to [viewModel], the location permission and the app coming forward. */
 @Composable
@@ -164,17 +172,37 @@ private fun BelowDial(
 ) {
     val timeZone = state.day.timeZone
     Column(modifier = modifier.padding(top = BelowDialTopPadding)) {
-        state.selected?.let { item ->
-            val timing = item.timing
-            DetailCard(
-                title = item.title,
-                timing = timing.format(timeZone, state.use24Hour),
-                duration = timing.duration,
-                description = item.description,
-                swatch = item.ringColor?.toColor() ?: Color.Unspecified,
-                onDismiss = { onSelect(null) },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
-            )
+        // Keyed on whether there's a selection, so choosing a different item updates the card in
+        // place
+        // while showing and dismissing it animates. Exiting content keeps the item it was showing.
+        AnimatedContent(
+            targetState = state.selected,
+            contentKey = { it != null },
+            transitionSpec = {
+                (fadeIn(
+                        tween(DETAIL_CARD_FADE_MS, delayMillis = DETAIL_CARD_FADE_MS / 2),
+                    ) togetherWith fadeOut(tween(DETAIL_CARD_FADE_MS / 2)))
+                    .using(SizeTransform(clip = false))
+            },
+            label = "detailCard",
+        ) { item ->
+            if (item == null) {
+                Spacer(Modifier.fillMaxWidth())
+            } else {
+                val timing = item.timing
+                DetailCard(
+                    title = item.title,
+                    timing = timing.format(timeZone, state.use24Hour),
+                    duration = timing.duration,
+                    description = item.description,
+                    swatch = item.ringColor?.toColor() ?: Color.Unspecified,
+                    onDismiss = { onSelect(null) },
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .animateContentSize(),
+                )
+            }
         }
         PrimaryTabRow(
             selectedTabIndex = state.tab.ordinal,
