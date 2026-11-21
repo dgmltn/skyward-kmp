@@ -58,7 +58,7 @@ import app.skyward.sky.tabs.sunRows
 import dev.jamesyox.kastro.sol.SolarEvent
 
 private val MaxContentWidth = 600.dp
-private val TabBarTopPadding = 16.dp
+private val BelowDialTopPadding = 16.dp
 
 /** Connects [SkyScreen] to [viewModel], the location permission and the app coming forward. */
 @Composable
@@ -163,7 +163,7 @@ private fun BelowDial(
     modifier: Modifier = Modifier,
 ) {
     val timeZone = state.day.timeZone
-    Column(modifier = modifier) {
+    Column(modifier = modifier.padding(top = BelowDialTopPadding)) {
         state.selected?.let { item ->
             val timing = item.timing
             DetailCard(
@@ -177,7 +177,6 @@ private fun BelowDial(
             )
         }
         PrimaryTabRow(
-            modifier = Modifier.padding(top = TabBarTopPadding),
             selectedTabIndex = state.tab.ordinal,
             containerColor = MaterialTheme.colorScheme.background,
         ) {
