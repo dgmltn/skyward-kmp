@@ -10,10 +10,10 @@ xcodebuild -scheme Skyward -destination 'generic/platform=iOS Simulator' build
 
 | Target | Kind | Bundle ID | Kotlin framework |
 |---|---|---|---|
-| `Skyward` | iOS app | `app.skyward.ios` | `SkywardKit` from `:app` |
-| `SkywardWidget` | Widget extension, embedded in `Skyward` | `app.skyward.ios.widget` | `SkywardWidgetKit` from `:widget` (static) |
+| `Skyward` | iOS app | `com.dgmltn.skyward` | `SkywardKit` from `:app` |
+| `SkywardWidget` | Widget extension, embedded in `Skyward` | `com.dgmltn.skyward.widget` | `SkywardWidgetKit` from `:widget` (static) |
 
-Both targets share the App Group `group.app.skyward`, through which the app saves the last
+Both targets share the App Group `group.com.dgmltn.skyward`, through which the app saves the last
 location for the widget. Each target builds its framework in a pre-build script with
 `./gradlew :<module>:embedAndSignAppleFrameworkForXcode`.
 
@@ -22,11 +22,11 @@ Deployment target: iOS 17.0. Requires [XcodeGen](https://github.com/yonaskolb/Xc
 ## Signing
 
 `project.yml` sets team `PAPMGT5WBR` with automatic signing (`CODE_SIGN_STYLE: Automatic`). To use
-a different account, change `DEVELOPMENT_TEAM` and the `app.skyward` bundle ID prefix and App
+a different account, change `DEVELOPMENT_TEAM` and the `com.dgmltn.skyward` bundle ID and App
 Group.
 
 ### First run on a device
 
-The first build to a phone registers the App IDs (`app.skyward.ios`, `app.skyward.ios.widget`) and
-the App Group `group.app.skyward` on the developer account through automatic signing. Pick your
+The first build to a phone registers the App IDs (`com.dgmltn.skyward`, `com.dgmltn.skyward.widget`) and
+the App Group `group.com.dgmltn.skyward` on the developer account through automatic signing. Pick your
 device in Xcode and run the `Skyward` scheme; Xcode creates the provisioning profiles itself.

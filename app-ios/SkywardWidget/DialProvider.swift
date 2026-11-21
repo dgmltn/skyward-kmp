@@ -2,7 +2,7 @@ import Foundation
 import SkywardWidgetKit
 import WidgetKit
 
-let appGroup = "group.app.skyward"
+let appGroup = "group.com.dgmltn.skyward"
 
 /// One moment of the widget.
 struct DialEntry: TimelineEntry {

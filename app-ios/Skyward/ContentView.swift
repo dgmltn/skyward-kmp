@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 import WidgetKit
 
-private let appGroup = "group.app.skyward"
+private let appGroup = "group.com.dgmltn.skyward"
 
 struct ContentView: View {
     var body: some View {
