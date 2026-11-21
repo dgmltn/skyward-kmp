@@ -5,10 +5,16 @@ import WidgetKit
 struct DialWidgetView: View {
     let entry: DialEntry
     @Environment(\.widgetRenderingMode) private var renderingMode
+    /// False in StandBy, which removes the widget's background and shows it larger.
+    @Environment(\.showsWidgetContainerBackground) private var showsBackground
 
     var body: some View {
-        DialWidgetContent(entry: entry, monochrome: renderingMode != .fullColor)
-            .containerBackground(Color.black, for: .widget)
+        DialWidgetContent(
+            entry: entry,
+            monochrome: renderingMode != .fullColor,
+            showsHourLabels: !showsBackground
+        )
+        .containerBackground(Color.black, for: .widget)
     }
 }
 
@@ -16,11 +22,12 @@ struct DialWidgetView: View {
 struct DialWidgetContent: View {
     let entry: DialEntry
     let monochrome: Bool
+    var showsHourLabels = false
 
     var body: some View {
         switch entry.face {
         case .dial(let dial):
-            DialRenderer(model: dial, monochrome: monochrome)
+            DialRenderer(model: dial, monochrome: monochrome, showsHourLabels: showsHourLabels)
                 .padding(4)
         case .noLocation:
             WidgetMessage(text: "Open Skyward to set location")

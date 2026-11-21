@@ -11,13 +11,17 @@ private let dialSize: CGFloat = 200
 private let handWidth: CGFloat = 0.8
 private let centreDotRadius: CGFloat = 3
 private let handHaloWidth: CGFloat = 3
+/// Larger than the app's 3 units: StandBy shows the small widget from across the room.
+private let hourLabelSize: CGFloat = 4.5
 
 /// The sun and moon dial for one day, drawn square and scaled to fit. With `monochrome` set, every
 /// element is white at its palette luminance, for the widget's vibrant and accented modes. Hour
-/// labels are left out: at widget size they would be under three points tall.
+/// labels are only drawn when `showsHourLabels` is set: on the Home Screen they'd be too small to
+/// read, but StandBy shows the widget at about twice the size.
 struct DialRenderer: View {
     let model: DialModel
     let monochrome: Bool
+    var showsHourLabels = false
 
     var body: some View {
         Canvas { context, size in
@@ -25,7 +29,9 @@ struct DialRenderer: View {
             var dial = context
             dial.translateBy(x: size.width / 2, y: size.height / 2)
             dial.scaleBy(x: scale, y: scale)
-            DialPainter(context: dial, ink: DialInk(monochrome: monochrome)).draw(model)
+            let painter = DialPainter(context: dial, ink: DialInk(monochrome: monochrome))
+            painter.draw(model)
+            if showsHourLabels { painter.drawHourLabels(model) }
         }
         .aspectRatio(1, contentMode: .fit)
     }
@@ -40,6 +46,10 @@ struct DialInk {
             return .color(.white.opacity(Double(color.luminance * alpha)))
         }
         return .color(Color(argb: color.argb).opacity(Double(alpha)))
+    }
+
+    func color(_ color: DialColor) -> Color {
+        monochrome ? .white.opacity(Double(color.luminance)) : Color(argb: color.argb)
     }
 }
 
@@ -69,6 +79,15 @@ struct DialPainter {
             )
         }
         if let tick = model.selectedEventTick { drawTick(tick) }
+    }
+
+    func drawHourLabels(_ model: DialModel) {
+        for label in model.hourLabels {
+            let text = Text(label.text)
+                .font(.system(size: hourLabelSize, weight: .medium))
+                .foregroundStyle(ink.color(label.color))
+            context.draw(text, at: polar(label.radius, label.angleDegrees))
+        }
     }
 
     private func drawRing(_ arc: DialArc, cutting halo: Path?) {
