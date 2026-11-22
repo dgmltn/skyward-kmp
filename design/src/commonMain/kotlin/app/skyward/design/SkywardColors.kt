@@ -10,4 +10,6 @@ object SkywardColors {
     val Accent = Color(0xFF003FC5)
     val TextPrimary = Color(0xFFFFFFFF)
     val TextSecondary = Color(0xFF9E9EA3)
+    /** A lighter blue than [Accent], readable as link text on the dark panels. */
+    val Link = Color(0xFF8AB4FF)
 }

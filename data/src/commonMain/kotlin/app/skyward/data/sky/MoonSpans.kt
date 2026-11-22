@@ -1,6 +1,6 @@
 /*
  * Based on kastro-demo by James Yox (GPL-3.0)
- * https://github.com/jamesyox/kastro-demo
+ * https://github.com/yoxjames/kastro-demo
  */
 
 package app.skyward.data.sky
