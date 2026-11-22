@@ -5,6 +5,7 @@
 
     <application
         android:name=".SkywardApplication"
+        android:icon="@mipmap/ic_launcher"
         android:label="Skyward"
         android:theme="@android:style/Theme.Material.NoActionBar">
         <activity
