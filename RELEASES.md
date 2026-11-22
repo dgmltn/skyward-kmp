@@ -27,10 +27,10 @@ repository's `release` environment:
 
 | Secret | What it holds |
 |---|---|
-| `SKYWARD_KEYSTORE_BASE64` | The keystore file, base64-encoded |
-| `SKYWARD_KEYSTORE_PASSWORD` | The keystore's password |
-| `SKYWARD_KEY_ALIAS` | The key's alias in the keystore |
-| `SKYWARD_KEY_PASSWORD` | The key's password |
+| `ANDROID_KEYSTORE_BASE64` | The keystore file, base64-encoded |
+| `ANDROID_KEYSTORE_PASSWORD` | The keystore's password |
+| `ANDROID_KEY_ALIAS` | The key's alias in the keystore |
+| `ANDROID_KEY_PASSWORD` | The key's password |
 
 Keep a backup of the keystore and its passwords: losing them means later releases can't be
 installed over earlier ones.
