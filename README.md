@@ -16,8 +16,6 @@ it, tabs list today's states and events and the sun and moon right now.
   <img src="resources/screenshots/android-states.png" width="270" alt="Skyward on Android: the dial, with the States tab listing today's sun phases">
 </p>
 
-The source lives at [github.com/dgmltn/skyward-kmp](https://github.com/dgmltn/skyward-kmp).
-
 ## Credits
 
 - Sun and moon calculations by [Kastro](https://github.com/yoxjames/Kastro) (Apache-2.0), by
