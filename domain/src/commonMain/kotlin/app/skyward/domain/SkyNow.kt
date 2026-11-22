@@ -18,4 +18,6 @@ data class SkyNow(
     val nextSunset: Instant?,
     val nextMoonrise: Instant?,
     val nextMoonset: Instant?,
+    val nextFullMoon: Instant,
+    val nextNewMoon: Instant,
 )

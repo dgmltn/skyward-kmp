@@ -83,6 +83,8 @@ fun CurrentTab(
             Reading("Azimuth", degrees(now.moonAzimuth))
             Reading("Next moonrise", next(now.nextMoonrise))
             Reading("Next moonset", next(now.nextMoonset))
+            Reading("Next full moon", next(now.nextFullMoon))
+            Reading("Next new moon", next(now.nextNewMoon))
         }
     }
 }

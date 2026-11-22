@@ -10,6 +10,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
@@ -100,6 +101,15 @@ class KastroSkyRepositoryTest {
     }
 
     @Test
+    fun nowReportsTheNextFullAndNewMoon() {
+        val now = repository.now(london, Instant.parse("2026-06-21T12:00:00Z"))
+
+        // Published phase times are to the minute and sources differ by a few.
+        assertNear(Instant.parse("2026-06-29T23:57:00Z"), now.nextFullMoon, 10.minutes)
+        assertNear(Instant.parse("2026-07-14T09:44:00Z"), now.nextNewMoon, 10.minutes)
+    }
+
+    @Test
     fun nowInPolarDayCompletes() {
         val start = Instant.parse("2026-06-21T12:00:00Z")
 
@@ -111,7 +121,11 @@ class KastroSkyRepositoryTest {
     private fun localInstant(date: LocalDate, hour: Int, minute: Int, zone: TimeZone): Instant =
         LocalTime(hour, minute).atDate(date).toInstant(zone)
 
-    private fun assertNear(expected: Instant, actual: Instant) {
+    private fun assertNear(
+        expected: Instant,
+        actual: Instant,
+        tolerance: Duration = this.tolerance,
+    ) {
         val difference = (expected - actual).absoluteValue
         assertTrue(difference <= tolerance, "expected $expected but was $actual")
     }

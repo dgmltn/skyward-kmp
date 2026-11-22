@@ -94,6 +94,8 @@ internal object DialPreviewFixtures {
             nextSunset = Instant.parse("2026-06-21T20:21:47Z"),
             nextMoonrise = Instant.parse("2026-06-22T12:55:43Z"),
             nextMoonset = Instant.parse("2026-06-21T23:46:04Z"),
+            nextFullMoon = Instant.parse("2026-06-29T23:57:00Z"),
+            nextNewMoon = Instant.parse("2026-07-14T09:44:00Z"),
         )
 
     val Tromso: SkyDay =
@@ -136,6 +138,8 @@ internal object DialPreviewFixtures {
             nextSunset = Instant.parse("2026-07-25T22:38:03Z"),
             nextMoonrise = Instant.parse("2026-06-22T12:13:12Z"),
             nextMoonset = Instant.parse("2026-06-21T22:13:51Z"),
+            nextFullMoon = Instant.parse("2026-06-29T23:57:00Z"),
+            nextNewMoon = Instant.parse("2026-07-14T09:44:00Z"),
         )
 
     private class PreviewDay(private val timeZone: TimeZone) {

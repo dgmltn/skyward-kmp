@@ -12,6 +12,8 @@ import app.skyward.domain.SkyRepository
 import dev.jamesyox.kastro.luna.LunarEvent
 import dev.jamesyox.kastro.luna.LunarEventSequence
 import dev.jamesyox.kastro.luna.LunarHorizonEventSequence
+import dev.jamesyox.kastro.luna.LunarPhase
+import dev.jamesyox.kastro.luna.LunarPhaseSequence
 import dev.jamesyox.kastro.luna.calculateLunarState
 import dev.jamesyox.kastro.sol.SolarEvent
 import dev.jamesyox.kastro.sol.SolarEventSequence
@@ -82,6 +84,8 @@ class KastroSkyRepository : SkyRepository {
             nextSunset = nextSolar(location, instant, SolarEvent.Sunset),
             nextMoonrise = nextLunar(location, instant, LunarEvent.HorizonEvent.Moonrise),
             nextMoonset = nextLunar(location, instant, LunarEvent.HorizonEvent.Moonset),
+            nextFullMoon = nextPhase(instant, LunarEvent.PhaseEvent.FullMoon),
+            nextNewMoon = nextPhase(instant, LunarEvent.PhaseEvent.NewMoon),
         )
     }
 
@@ -113,6 +117,16 @@ class KastroSkyRepository : SkyRepository {
             )
             .firstOrNull()
             ?.time
+
+    /** A lunar month is under 30 days, so there's always one within the search. */
+    private fun nextPhase(from: Instant, phase: LunarPhase.Primary): Instant =
+        LunarPhaseSequence(
+                start = from,
+                limit = SEARCH_LIMIT,
+                requestedLunarPhases = listOf(phase),
+            )
+            .first()
+            .time
 
     private fun GeoPoint.asPair(): Pair<Double, Double> = latitude to longitude
 
