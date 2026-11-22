@@ -9,6 +9,10 @@ up, the day's sun and moon events, and a hand for the current time with the moon
 it, tabs list today's states and events and the sun and moon right now.
 
 <p>
+  <img src="resources/screenshots/ios-standby.png" width="600" alt="iPhone StandBy: the clock beside the Skyward dial widget, with all 24 hour labels">
+</p>
+
+<p>
   <img src="resources/screenshots/android-states.png" width="270" alt="Skyward on Android: the dial, with the States tab listing today's sun phases">
 </p>
 
