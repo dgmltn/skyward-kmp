@@ -1,0 +1,48 @@
+# Builds a signed Android APK and publishes a GitHub release whenever a vX.Y.Z tag is pushed.
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check the tag matches the app version
+        run: |
+          version=$(grep '^skyward.versionName=' gradle.properties | cut -d= -f2)
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} doesn't match skyward.versionName=${version} in gradle.properties"
+            exit 1
+          fi
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Build the signed APK
+        env:
+          SKYWARD_KEYSTORE_BASE64: ${{ secrets.SKYWARD_KEYSTORE_BASE64 }}
+          SKYWARD_KEYSTORE_PASSWORD: ${{ secrets.SKYWARD_KEYSTORE_PASSWORD }}
+          SKYWARD_KEY_ALIAS: ${{ secrets.SKYWARD_KEY_ALIAS }}
+          SKYWARD_KEY_PASSWORD: ${{ secrets.SKYWARD_KEY_PASSWORD }}
+        run: |
+          export SKYWARD_KEYSTORE_FILE="${RUNNER_TEMP}/release.jks"
+          echo "${SKYWARD_KEYSTORE_BASE64}" | base64 --decode > "${SKYWARD_KEYSTORE_FILE}"
+          ./gradlew :app-android:assembleRelease
+          cp app-android/build/outputs/apk/release/app-android-release.apk "skyward-${GITHUB_REF_NAME}.apk"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" "skyward-${GITHUB_REF_NAME}.apk" --generate-notes --verify-tag

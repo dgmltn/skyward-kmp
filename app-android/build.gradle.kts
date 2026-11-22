@@ -16,6 +16,21 @@ android {
         versionCode = providers.gradleProperty("skyward.versionCode").get().toInt()
         versionName = providers.gradleProperty("skyward.versionName").get()
     }
+
+    // Release signing comes from the environment, which only the release workflow sets. Without
+    // it, release builds come out unsigned.
+    val keystore = providers.environmentVariable("SKYWARD_KEYSTORE_FILE").orNull
+    if (keystore != null) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(keystore)
+                storePassword = providers.environmentVariable("SKYWARD_KEYSTORE_PASSWORD").get()
+                keyAlias = providers.environmentVariable("SKYWARD_KEY_ALIAS").get()
+                keyPassword = providers.environmentVariable("SKYWARD_KEY_PASSWORD").get()
+            }
+        }
+        buildTypes { getByName("release") { signingConfig = signingConfigs.getByName("release") } }
+    }
 }
 
 dependencies {

@@ -65,7 +65,7 @@ Dependency versions live in `gradle/libs.versions.toml`; `scripts/latest-version
 latest stable version of each from Maven Central, Google Maven and the Gradle Plugin Portal.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the module layout and [app-ios/README.md](app-ios/README.md)
-for the iOS project, bundle IDs and signing.
+for the iOS project, bundle IDs and signing. [RELEASES.md](RELEASES.md) covers making a release.
 
 ## License
 
