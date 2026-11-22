@@ -14,8 +14,10 @@ The source lives at [github.com/dgmltn/skyward-kmp](https://github.com/dgmltn/sk
 
 - Sun and moon calculations by [Kastro](https://github.com/yoxjames/Kastro) (Apache-2.0), by
   James Yox.
-- The dial and the phase derivations are ported from
-  [kastro-demo](https://github.com/yoxjames/kastro-demo) (GPL-3.0), by James Yox.
+- The dial, the phase derivations and the descriptions of each phase and event are ported from
+  [kastro-demo](https://github.com/yoxjames/kastro-demo) (GPL-3.0), by James Yox. Its golden
+  hour and blue hour descriptions draw on
+  [timeanddate.com](https://www.timeanddate.com/astronomy/golden-hour.html).
 
 ## Building
 

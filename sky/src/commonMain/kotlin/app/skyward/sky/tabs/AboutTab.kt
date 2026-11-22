@@ -20,6 +20,7 @@ import app.skyward.design.SkywardPreview
 
 private const val KASTRO_URL = "https://github.com/yoxjames/Kastro"
 private const val KASTRO_DEMO_URL = "https://github.com/yoxjames/kastro-demo"
+private const val TIME_AND_DATE_URL = "https://www.timeanddate.com/astronomy/golden-hour.html"
 private const val SOURCE_URL = "https://github.com/dgmltn/skyward-kmp"
 
 /** What Skyward is, who it builds on, and its licence. */
@@ -53,9 +54,19 @@ fun AboutTab(
             buildAnnotatedString {
                 append("Sun and moon calculations by ")
                 withLink(LinkAnnotation.Url(KASTRO_URL, linkStyle)) { append("Kastro") }
-                append(" (Apache-2.0) and design based on ")
+                append(" (Apache-2.0). The dial's design and the descriptions of each phase and ")
+                append("event come from ")
                 withLink(LinkAnnotation.Url(KASTRO_DEMO_URL, linkStyle)) { append("kastro-demo") }
-                append(" (GPL-3.0), both by James Yox.")
+                append(" (GPL-3.0). Both are by James Yox.")
+            },
+        )
+        Paragraph(
+            buildAnnotatedString {
+                append("kastro-demo's golden hour and blue hour descriptions draw on ")
+                withLink(LinkAnnotation.Url(TIME_AND_DATE_URL, linkStyle)) {
+                    append("timeanddate.com")
+                }
+                append(".")
             },
         )
         Paragraph(AnnotatedString("Skyward is free software under the GPL-3.0."))
