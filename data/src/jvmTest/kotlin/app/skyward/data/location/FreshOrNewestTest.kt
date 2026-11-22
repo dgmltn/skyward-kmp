@@ -27,4 +27,17 @@ class FreshOrNewestTest {
     fun nothingAtAllGivesNull() {
         assertNull(freshOrNewest(null, listOf(null, null), Fix::timeMs))
     }
+
+    @Test
+    fun aRecentCachedFixIsUsedWithoutWaiting() {
+        assertEquals(
+            newer,
+            recentCached(listOf(older, newer), nowMs = 2_500, maxAgeMs = 1_000, Fix::timeMs),
+        )
+    }
+
+    @Test
+    fun anOldCachedFixMeansWaitingForAFreshOne() {
+        assertNull(recentCached(listOf(older, newer), nowMs = 9_000, maxAgeMs = 1_000, Fix::timeMs))
+    }
 }

@@ -197,6 +197,31 @@ class SkyViewModelTest {
     }
 
     @Test
+    fun aSecondRefreshWaitsForTheOneUnderway() = runTest {
+        val answer = CompletableDeferred<FixResult>()
+        val refreshes = MutableStateFlow(0)
+        val location =
+            object : LocationRepository {
+                override val saved: Flow<SavedLocation?> = MutableStateFlow(null)
+
+                override suspend fun refresh(): FixResult {
+                    refreshes.update { it + 1 }
+                    return answer.await()
+                }
+            }
+        val viewModel = viewModel(location)
+        viewModel.state.first { it is SkyUiState.NeedsLocation }
+
+        viewModel.onForeground()
+        viewModel.state.first { (it as? SkyUiState.NeedsLocation)?.locating == true }
+        viewModel.onForeground()
+        answer.complete(FixResult.Unavailable)
+        viewModel.state.first { (it as? SkyUiState.NeedsLocation)?.locating == false }
+
+        assertEquals(1, refreshes.value)
+    }
+
+    @Test
     fun foregroundRefreshesLocation() = runTest {
         val location = FakeLocation(london)
         val viewModel = viewModel(location)

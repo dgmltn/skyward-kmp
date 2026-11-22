@@ -16,6 +16,7 @@ import app.skyward.domain.SavedLocation
 import co.touchlab.kermit.Logger
 import java.util.concurrent.Executor
 import kotlin.coroutines.resume
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -32,11 +33,14 @@ class AndroidLocationSource(private val context: Context) : LocationSource {
 
     private suspend fun fixFromProvider(): FixResult {
         val manager = context.getSystemService(LocationManager::class.java)
-        val provider = manager.coarseProvider()
-        val fresh =
-            provider?.let { withTimeoutOrNull(FIX_TIMEOUT) { manager.awaitCurrentLocation(it) } }
-        if (fresh == null) log.i { "No fresh location from provider $provider; trying cached ones" }
-        val location = freshOrNewest(fresh, manager.cachedLocations(), Location::getTime)
+        val cached = manager.cachedLocations()
+        val location =
+            recentCached(
+                cached,
+                nowMs = System.currentTimeMillis(),
+                maxAgeMs = RECENT_ENOUGH.inWholeMilliseconds,
+                timeMs = Location::getTime,
+            ) ?: freshOrNewest(manager.freshLocation(), cached, Location::getTime)
         return if (location == null) {
             log.w { "No location, fresh or cached, from any provider" }
             FixResult.Unavailable
@@ -48,6 +52,13 @@ class AndroidLocationSource(private val context: Context) : LocationSource {
                 )
             )
         }
+    }
+
+    private suspend fun LocationManager.freshLocation(): Location? {
+        val provider = coarseProvider()
+        val fresh = provider?.let { withTimeoutOrNull(FIX_TIMEOUT) { awaitCurrentLocation(it) } }
+        if (fresh == null) log.i { "No fresh location from provider $provider; trying cached ones" }
+        return fresh
     }
 
     private fun LocationManager.coarseProvider(): String? =
@@ -76,6 +87,8 @@ class AndroidLocationSource(private val context: Context) : LocationSource {
     private companion object {
         val log = Logger.withTag("AndroidLocationSource")
         val FIX_TIMEOUT = 30.seconds
+        /** Phones often can't give a coarse-only app a fresh fix quickly, so a recent one is used as is. */
+        val RECENT_ENOUGH = 30.minutes
         val CACHED_PROVIDERS =
             listOf(
                 LocationManager.FUSED_PROVIDER,

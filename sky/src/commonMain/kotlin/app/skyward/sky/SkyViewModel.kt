@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -44,6 +45,7 @@ class SkyViewModel(
     private val fix = MutableStateFlow(FixProgress())
     private val foregroundCount = MutableStateFlow(0)
 
+    private var refreshing: Job? = null
     private var cachedDay: CachedDay? = null
     private var lastSkyData: SkyData? = null
     private var lastReady: SkyUiState.Ready? = null
@@ -94,7 +96,8 @@ class SkyViewModel(
 
     @Suppress("TooGenericExceptionCaught")
     private fun refreshLocation() {
-        viewModelScope.launch {
+        if (refreshing?.isActive == true) return
+        refreshing = viewModelScope.launch {
             fix.update { it.copy(locating = true) }
             val located =
                 try {
