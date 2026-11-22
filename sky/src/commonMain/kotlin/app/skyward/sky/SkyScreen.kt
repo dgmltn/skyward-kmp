@@ -49,6 +49,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlin.math.ceil
+import androidx.compose.ui.unit.lerp
+import androidx.compose.ui.unit.Dp
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabIndicatorScope
+import androidx.compose.material3.TabPosition
+import androidx.compose.foundation.pager.PagerState
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -222,6 +229,12 @@ private fun BelowDial(
         PrimaryTabRow(
             selectedTabIndex = pagerState.currentPage,
             containerColor = MaterialTheme.colorScheme.background,
+            indicator = {
+                TabRowDefaults.PrimaryIndicator(
+                    modifier = followingSwipe(pagerState),
+                    width = Dp.Unspecified,
+                )
+            },
         ) {
             SkyTab.entries.forEach { tab ->
                 Tab(
@@ -251,6 +264,28 @@ private fun BelowDial(
         }
     }
 }
+
+/**
+ * Places the tab indicator between the two tabs a swipe is between, in proportion to how far the
+ * swipe has gone, at the width of the tab text.
+ */
+private fun TabIndicatorScope.followingSwipe(pagerState: PagerState): Modifier =
+    Modifier.tabIndicatorLayout { measurable, constraints, tabPositions ->
+        val position =
+            (pagerState.currentPage + pagerState.currentPageOffsetFraction)
+                .coerceIn(0f, tabPositions.lastIndex.toFloat())
+        val from = tabPositions[position.toInt()]
+        val to = tabPositions[ceil(position).toInt()]
+        val fraction = position - position.toInt()
+        val width = lerp(from.contentWidth, to.contentWidth, fraction).roundToPx()
+        val left = lerp(from.contentLeft, to.contentLeft, fraction).roundToPx()
+        val placeable = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
+        // As wide as the slot the tab row offers, or it would centre the indicator in it.
+        layout(constraints.maxWidth, placeable.height) { placeable.place(left, 0) }
+    }
+
+private val TabPosition.contentLeft: Dp
+    get() = left + (width - contentWidth) / 2
 
 @Composable
 private fun TabContent(
