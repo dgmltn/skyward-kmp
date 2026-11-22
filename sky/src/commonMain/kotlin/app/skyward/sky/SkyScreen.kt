@@ -27,12 +27,16 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabIndicatorScope
+import androidx.compose.material3.TabPosition
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,21 +45,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import kotlin.math.ceil
-import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.Dp
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabIndicatorScope
-import androidx.compose.material3.TabPosition
-import androidx.compose.foundation.pager.PagerState
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -75,6 +74,7 @@ import app.skyward.sky.tabs.eventRows
 import app.skyward.sky.tabs.moonRows
 import app.skyward.sky.tabs.sunRows
 import dev.jamesyox.kastro.sol.SolarEvent
+import kotlin.math.ceil
 import kotlinx.coroutines.launch
 
 private val MaxContentWidth = 600.dp
@@ -217,8 +217,7 @@ private fun BelowDial(
                 )
             }
         }
-        val pagerState =
-            rememberPagerState(initialPage = state.tab.ordinal) { SkyTab.entries.size }
+        val pagerState = rememberPagerState(initialPage = state.tab.ordinal) { SkyTab.entries.size }
         val scope = rememberCoroutineScope()
         val currentOnSelectTab by rememberUpdatedState(onSelectTab)
         // The pager owns which page shows; the view model hears about it once a swipe settles.
@@ -272,8 +271,10 @@ private fun BelowDial(
 private fun TabIndicatorScope.followingSwipe(pagerState: PagerState): Modifier =
     Modifier.tabIndicatorLayout { measurable, constraints, tabPositions ->
         val position =
-            (pagerState.currentPage + pagerState.currentPageOffsetFraction)
-                .coerceIn(0f, tabPositions.lastIndex.toFloat())
+            (pagerState.currentPage + pagerState.currentPageOffsetFraction).coerceIn(
+                0f,
+                tabPositions.lastIndex.toFloat(),
+            )
         val from = tabPositions[position.toInt()]
         val to = tabPositions[ceil(position).toInt()]
         val fraction = position - position.toInt()

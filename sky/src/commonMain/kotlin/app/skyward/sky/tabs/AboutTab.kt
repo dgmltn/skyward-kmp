@@ -39,8 +39,8 @@ fun AboutTab(
         Paragraph(
             AnnotatedString(
                 "Skyward shows today's sun and moon on a 24-hour dial: the sun's phases from night " +
-                "through twilight to day, golden and blue hour, and when the moon is up. Tap a " +
-                "ring, a marker or a row to learn more about it.",
+                    "through twilight to day, golden and blue hour, and when the moon is up. Tap a " +
+                    "ring, a marker or a row to learn more about it.",
             ),
         )
         val linkStyle =
