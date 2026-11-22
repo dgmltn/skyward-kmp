@@ -11,13 +11,13 @@ private let dialSize: CGFloat = 200
 private let handWidth: CGFloat = 0.8
 private let centreDotRadius: CGFloat = 3
 private let handHaloWidth: CGFloat = 3
-/// Larger than the app's 3 units: StandBy shows the small widget from across the room.
+/// Larger than the app's 3 units: StandBy and the large widget are read from further away.
 private let hourLabelSize: CGFloat = 4.5
 
 /// The sun and moon dial for one day, drawn square and scaled to fit. With `monochrome` set, every
 /// element is white at its palette luminance, for the widget's vibrant and accented modes. Hour
-/// labels are only drawn when `showsHourLabels` is set: on the Home Screen they'd be too small to
-/// read, but StandBy shows the widget at about twice the size.
+/// labels are only drawn when `showsHourLabels` is set: in the small Home Screen widget they'd be too
+/// small to read, but StandBy and the large widget show the dial at about twice the size.
 struct DialRenderer: View {
     let model: DialModel
     let monochrome: Bool

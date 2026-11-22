@@ -7,12 +7,13 @@ struct DialWidgetView: View {
     @Environment(\.widgetRenderingMode) private var renderingMode
     /// False in StandBy, which removes the widget's background and shows it larger.
     @Environment(\.showsWidgetContainerBackground) private var showsBackground
+    @Environment(\.widgetFamily) private var family
 
     var body: some View {
         DialWidgetContent(
             entry: entry,
             monochrome: renderingMode != .fullColor,
-            showsHourLabels: !showsBackground
+            showsHourLabels: !showsBackground || family == .systemLarge
         )
         .containerBackground(Color.black, for: .widget)
     }

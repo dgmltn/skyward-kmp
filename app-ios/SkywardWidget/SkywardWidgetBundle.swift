@@ -15,12 +15,18 @@ struct SkywardDialWidget: Widget {
         }
         .configurationDisplayName("Skyward")
         .description("Today's sun and moon dial.")
-        .supportedFamilies([.systemSmall])
+        .supportedFamilies([.systemSmall, .systemLarge])
         .contentMarginsDisabled()
     }
 }
 
 #Preview("London", as: .systemSmall) {
+    SkywardDialWidget()
+} timeline: {
+    for entry in DialPreviewData.london.prefix(12) { entry }
+}
+
+#Preview("London, large", as: .systemLarge) {
     SkywardDialWidget()
 } timeline: {
     for entry in DialPreviewData.london.prefix(12) { entry }
