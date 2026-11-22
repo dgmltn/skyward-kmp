@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +39,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -63,6 +68,7 @@ import app.skyward.sky.tabs.eventRows
 import app.skyward.sky.tabs.moonRows
 import app.skyward.sky.tabs.sunRows
 import dev.jamesyox.kastro.sol.SolarEvent
+import kotlinx.coroutines.launch
 
 private val MaxContentWidth = 600.dp
 private val BelowDialTopPadding = 16.dp
@@ -204,45 +210,57 @@ private fun BelowDial(
                 )
             }
         }
+        val pagerState =
+            rememberPagerState(initialPage = state.tab.ordinal) { SkyTab.entries.size }
+        val scope = rememberCoroutineScope()
+        val currentOnSelectTab by rememberUpdatedState(onSelectTab)
+        // The pager owns which page shows; the view model hears about it once a swipe settles.
+        LaunchedEffect(pagerState) {
+            snapshotFlow { pagerState.settledPage }
+                .collect { currentOnSelectTab(SkyTab.entries[it]) }
+        }
         PrimaryTabRow(
-            selectedTabIndex = state.tab.ordinal,
+            selectedTabIndex = pagerState.currentPage,
             containerColor = MaterialTheme.colorScheme.background,
         ) {
             SkyTab.entries.forEach { tab ->
                 Tab(
-                    selected = tab == state.tab,
-                    onClick = { onSelectTab(tab) },
+                    selected = tab.ordinal == pagerState.currentPage,
+                    onClick = { scope.launch { pagerState.animateScrollToPage(tab.ordinal) } },
                     text = { Text(tab.label) },
                     selectedContentColor = MaterialTheme.colorScheme.onSurface,
                     unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
-        Column(
+        HorizontalPager(
+            state = pagerState,
             modifier =
-                Modifier.fillMaxWidth()
-                    .weight(1f)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .verticalScroll(rememberScrollState()),
-        ) {
-            TabContent(
-                state = state,
-                onSelect = onSelect,
-                modifier = Modifier.fillMaxWidth().padding(12.dp),
-            )
-            Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.safeDrawing))
+                Modifier.fillMaxWidth().weight(1f).background(MaterialTheme.colorScheme.surface),
+            verticalAlignment = Alignment.Top,
+        ) { page ->
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                TabContent(
+                    tab = SkyTab.entries[page],
+                    state = state,
+                    onSelect = onSelect,
+                    modifier = Modifier.fillMaxWidth().padding(12.dp),
+                )
+                Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.safeDrawing))
+            }
         }
     }
 }
 
 @Composable
 private fun TabContent(
+    tab: SkyTab,
     state: SkyUiState.Ready,
     onSelect: (SkyItem?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val day = state.day
-    when (state.tab) {
+    when (tab) {
         SkyTab.STATES -> {
             val sunRows = remember(day, state.use24Hour) { day.sunRows(state.use24Hour) }
             val moonRows = remember(day, state.use24Hour) { day.moonRows(state.use24Hour) }
